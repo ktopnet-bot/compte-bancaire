@@ -1,4 +1,4 @@
-var CACHE='carnet-comptes-v8';
+var CACHE='carnet-comptes-v9';
 var FILES=['./','index.html','style.css','app.js','manifest.json'];
 self.addEventListener('install',function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(FILES)}));

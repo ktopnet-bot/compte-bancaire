@@ -21,11 +21,13 @@ function catOf(id){return CATS[LEGACY[id]||id]||customCat(id)||{name:'Autre',col
 function catList(kind){
   var b=(kind==='inc'?INC:EXP).map(function(c){return [c[0],c[1]]});
   ((state&&state.cats)||[]).forEach(function(c){if(c.kind===kind)b.push([c.id,c.name])});
-  var o=b.filter(function(x){return x[0]==='oth'});
-  return b.filter(function(x){return x[0]!=='oth'}).concat(o);
+  var last=function(x){return x[0]==='oth'||x[0]==='oinc'};
+  var o=b.filter(last).sort(function(x,y){return abc(x[1],y[1])});
+  return b.filter(function(x){return !last(x)}).sort(function(x,y){return abc(x[1],y[1])}).concat(o);
 }
 var TYPES={courant:'Compte courant',epargne:'Épargne',carte:'Carte prépayée',especes:'Espèces'};
 var BANKS=['BIAT','STB','BNA','Attijari Bank','Amen Bank','ATB','UIB','BH Bank','Banque Zitouna','Banque de Tunisie','Poste Tunisienne','Wifak Bank','Al Baraka Bank'];
+var abc=function(a,b){return String(a).localeCompare(String(b),'fr',{sensitivity:'base'})};
 var ACOL=['#2B4ACB','#0E8A6B','#B5532A','#7B4CC2','#B0802A','#C23B6B'];
 
 var nfs={};
@@ -713,7 +715,7 @@ function openPicker(cfg){
 }
 function pickAccs(){
   openPicker({title:'Sélectionner',allLabel:'Tous les comptes',sel:ui.rc.accs.filter(function(id){return accById(id)}),
-    items:state.accounts.map(function(a){return {id:a.id,label:a.name+' ('+a.cur+')'}}),
+    items:state.accounts.slice().sort(function(x,y){return abc(x.name,y.name)}).map(function(a){return {id:a.id,label:a.name+' ('+a.cur+')'}}),
     onApply:function(s){ui.rc.accs=s;ui.rc.cur=null}});
 }
 function pickCats(){
@@ -775,7 +777,7 @@ function txSheet(id){
   var t=id?state.tx.find(function(x){return x.id===id}):null;
   var type=t?t.type:'exp',pendingCat=null;
   var defAcc=t?t.acc:(ui.acc!=='all'&&accById(ui.acc)?ui.acc:state.accounts[0].id);
-  var accOpts=state.accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(a.id===defAcc?' selected':'')+'>'+esc(a.name)+' ('+esc(a.bank||'')+')</option>'}).join('');
+  var accOpts=state.accounts.slice().sort(function(x,y){return abc(x.name,y.name)}).map(function(a){return '<option value="'+esc(a.id)+'"'+(a.id===defAcc?' selected':'')+'>'+esc(a.name)+' ('+esc(a.bank||'')+')</option>'}).join('');
   openSheet('<h2>'+(t?'Modifier l’opération':'Nouvelle opération')+'</h2>'+
   '<div class="seg" id="f-type"><button type="button" data-t="exp">Dépense</button><button type="button" data-t="inc">Revenu</button><button type="button" data-t="tr">Virement</button></div>'+
   '<div class="field"><label for="f-amt">Montant</label><div class="amount"><input id="f-amt" inputmode="decimal" autocomplete="off" placeholder="0,000" value="'+esc(t?amtInput(t.amt):'')+'"><span id="f-cur"></span></div></div>'+
@@ -804,7 +806,7 @@ function txSheet(id){
   $('#f-acc').onchange=refresh;
   function renderSug(){
     var have=catList(type).map(function(c){return c[1].toLowerCase()});
-    var sg=(SUGG[type]||[]).filter(function(n){return have.indexOf(n.toLowerCase())<0});
+    var sg=(SUGG[type]||[]).filter(function(n){return have.indexOf(n.toLowerCase())<0}).sort(abc);
     $('#f-sug').innerHTML=sg.map(function(n){return '<button type="button" data-n="'+esc(n)+'">+ '+esc(n)+'</button>'}).join('');
   }
   function addCat(name){
@@ -821,7 +823,7 @@ function txSheet(id){
   }
   var editCat=null;
   function renderMine(){
-    var mine=(state.cats||[]).filter(function(c){return c.kind===type});
+    var mine=(state.cats||[]).filter(function(c){return c.kind===type}).sort(function(x,y){return abc(x.name,y.name)});
     $('#f-mine').innerHTML=mine.length?'<p class="eyebrow" style="margin:6px 0 2px">Vos catégories</p>'+mine.map(function(c){
       return c.id===editCat
         ?'<div class="mrow" data-id="'+esc(c.id)+'"><input maxlength="30" value="'+esc(c.name)+'" aria-label="Nouveau nom"><button type="button" class="ibtn ok" data-a="save" aria-label="Enregistrer le nom">✓</button><button type="button" class="ibtn" data-a="cancel" aria-label="Annuler">×</button></div>'
@@ -872,7 +874,7 @@ function accSheet(id){
   var a=id?accById(id):null;
   openSheet('<h2>'+(a?'Modifier le compte':'Nouveau compte')+'</h2>'+
   '<div class="field"><label for="a-name">Nom du compte</label><input id="a-name" maxlength="40" autocomplete="off" placeholder="Compte courant" value="'+esc(a?a.name:'')+'"></div>'+
-  '<div class="field"><label for="a-bank">Banque</label><input id="a-bank" list="banks" maxlength="40" autocomplete="off" placeholder="BIAT, STB, Amen Bank…" value="'+esc(a?a.bank:'')+'"><datalist id="banks">'+BANKS.map(function(b){return '<option value="'+esc(b)+'">'}).join('')+'</datalist></div>'+
+  '<div class="field"><label for="a-bank">Banque</label><input id="a-bank" list="banks" maxlength="40" autocomplete="off" placeholder="BIAT, STB, Amen Bank…" value="'+esc(a?a.bank:'')+'"><datalist id="banks">'+BANKS.slice().sort(abc).map(function(b){return '<option value="'+esc(b)+'">'}).join('')+'</datalist></div>'+
   '<div class="two"><div class="field"><label for="a-type">Type</label><select id="a-type">'+Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(a&&a.type===k?' selected':'')+'>'+TYPES[k]+'</option>'}).join('')+'</select></div>'+
   '<div class="field"><label for="a-cur">Devise</label><select id="a-cur">'+['TND','EUR','USD'].map(function(c){return '<option'+(a&&a.cur===c?' selected':'')+'>'+c+'</option>'}).join('')+'</select></div></div>'+
   '<div class="field"><label for="a-open">Solde initial</label><input id="a-open" inputmode="decimal" autocomplete="off" placeholder="0,000" value="'+esc(a?amtInput(a.open):'')+'"></div>'+
@@ -1020,15 +1022,15 @@ function importCsv(t){
 function catSheet(kind){
   kind=kind||'exp';var editId=null,armId=null,msg='';
   function paint(){
-    var cs=(state.cats||[]).filter(function(c){return c.kind===kind});
+    var cs=(state.cats||[]).filter(function(c){return c.kind===kind}).sort(function(x,y){return abc(x.name,y.name)});
     var have=catList(kind).map(function(c){return c[1].toLowerCase()});
-    var sg=(SUGG[kind]||[]).filter(function(n){return have.indexOf(n.toLowerCase())<0});
+    var sg=(SUGG[kind]||[]).filter(function(n){return have.indexOf(n.toLowerCase())<0}).sort(abc);
     var mine=cs.map(function(c){
       return c.id===editId
         ?'<div class="mrow" data-id="'+esc(c.id)+'"><input maxlength="30" value="'+esc(c.name)+'" aria-label="Nouveau nom"><button type="button" class="ibtn ok" data-cs="save" data-id="'+esc(c.id)+'" aria-label="Enregistrer le nom">✓</button><button type="button" class="ibtn" data-cs="cancel" aria-label="Annuler">×</button></div>'
         :'<div class="mrow" data-id="'+esc(c.id)+'"><span class="nm"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;background:'+catOf(c.id).color+'"></i>'+esc(c.name)+'</span><button type="button" class="ibtn" data-cs="ren" data-id="'+esc(c.id)+'" aria-label="Renommer '+esc(c.name)+'" title="Renommer">'+PEN+'</button><button type="button" class="ibtn'+(armId===c.id?' arm':'')+'" data-cs="del" data-id="'+esc(c.id)+'" aria-label="Supprimer '+esc(c.name)+'" title="Supprimer">'+BIN+'</button></div>';
     }).join('');
-    var built=(kind==='inc'?INC:EXP).map(function(c){return '<div class="mrow" style="grid-template-columns:minmax(0,1fr)"><span class="nm"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;background:'+catOf(c[0]).color+'"></i>'+esc(c[1])+'</span></div>'}).join('');
+    var built=(kind==='inc'?INC:EXP).slice().sort(function(x,y){return ((x[0]==='oth'||x[0]==='oinc')-(y[0]==='oth'||y[0]==='oinc'))||abc(x[1],y[1])}).map(function(c){return '<div class="mrow" style="grid-template-columns:minmax(0,1fr)"><span class="nm"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;background:'+catOf(c[0]).color+'"></i>'+esc(c[1])+'</span></div>'}).join('');
     $('#sheet').innerHTML='<h2>Catégories</h2><div class="seg" style="margin-bottom:14px"><button type="button" data-cs="kind" data-k="exp" aria-pressed="'+(kind==='exp')+'">Dépenses</button><button type="button" data-cs="kind" data-k="inc" aria-pressed="'+(kind==='inc')+'">Revenus</button></div>'+
     '<div class="field" style="margin-top:0"><label for="cs-new">Nouvelle catégorie</label><div class="rw2"><input id="cs-new" maxlength="30" autocomplete="off" placeholder="Ex. Essence"><button type="button" class="btn primary" data-cs="add">Ajouter</button></div></div>'+
     (sg.length?'<div class="sug" style="margin-top:8px">'+sg.map(function(n){return '<button type="button" data-cs="sug" data-n="'+esc(n)+'">+ '+esc(n)+'</button>'}).join('')+'</div>':'')+

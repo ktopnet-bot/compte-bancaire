@@ -27,6 +27,7 @@ function catList(kind){
 }
 var TYPES={courant:'Compte courant',epargne:'Épargne',carte:'Carte prépayée',especes:'Espèces'};
 var BANKS=['BIAT','STB','BNA','Attijari Bank','Amen Bank','ATB','UIB','BH Bank','Banque Zitouna','Banque de Tunisie','Poste Tunisienne','Wifak Bank','Al Baraka Bank'];
+var APP_VERSION='1.1';
 var abc=function(a,b){return String(a).localeCompare(String(b),'fr',{sensitivity:'base'})};
 var ACOL=['#2B4ACB','#0E8A6B','#B5532A','#7B4CC2','#B0802A','#C23B6B'];
 
@@ -910,7 +911,7 @@ function viewMore(){
   var items=[['new-acc','Ajouter un compte',''],['accounts','Modifier mes comptes',''],['theme','Thème clair / sombre','Actuel : '+themeName(themeMode)],['export-csv','Exporter (CSV)',''],['export-json','Sauvegarde complète (JSON)',''],['import','Importer',''],['cats','Catégories',''],['about','À propos','']];
   return '<h2 class="page-t">Plus</h2><div class="menu">'+items.map(function(i){
     return '<button type="button" class="menu-btn" data-act="'+i[0]+'"><span>'+i[1]+'</span>'+(i[2]?'<small>'+esc(i[2])+'</small>':'')+'</button>';
-  }).join('')+'</div><p class="credit">Créé par Kamel Nasralli</p>';
+  }).join('')+'</div><p class="credit">Créé par Kamel Nasralli · Version '+APP_VERSION+'</p>';
 }
 function csvCell(v){v=String(v==null?'':v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
 function buildCsv(){
@@ -1099,7 +1100,7 @@ function accountsSheet(){
   openSheet('<h2>Mes comptes</h2>'+(rows?'<div class="panel" style="padding:0 12px">'+rows+'</div>':'<div class="empty" style="padding:20px 0"><p style="margin:0 auto">Aucun compte pour le moment.</p></div>')+'<div class="actions" style="margin-top:16px"><button type="button" class="btn" data-act="close-all">Fermer</button><button type="button" class="btn primary" data-act="new-acc">Ajouter un compte</button></div>');
 }
 function aboutSheet(){
-  openSheet('<h2>À propos</h2><p style="margin:0 0 10px">Carnet de comptes suit vos comptes bancaires, vos dépenses et vos revenus, en dinars tunisiens (trois décimales), en euros ou en dollars.</p><p style="margin:0 0 10px;color:var(--muted)">Vos données sont enregistrées sur votre compte lorsque c’est possible, sinon dans ce navigateur. La sauvegarde complète (JSON) vous permet d’en garder une copie.</p><p style="margin:0 0 4px;color:var(--muted)">Version 1.0</p><p style="margin:0">Créé par Kamel Nasralli</p><div class="actions" style="margin-top:16px"><button type="button" class="btn primary" data-act="close">Fermer</button></div>');
+  openSheet('<h2>À propos</h2><p style="margin:0 0 10px">Carnet de comptes suit vos comptes bancaires, vos dépenses et vos revenus, en dinars tunisiens (trois décimales), en euros ou en dollars.</p><p style="margin:0 0 10px;color:var(--muted)">Vos données sont enregistrées sur votre compte lorsque c’est possible, sinon dans ce navigateur. La sauvegarde complète (JSON) vous permet d’en garder une copie.</p><p style="margin:0 0 4px;color:var(--muted)">Version '+APP_VERSION+'</p><p style="margin:0">Créé par Kamel Nasralli</p><div class="actions" style="margin-top:16px"><button type="button" class="btn primary" data-act="close">Fermer</button></div>');
 }
 function delAccSheet(id){
   var a=accById(id);if(!a)return;

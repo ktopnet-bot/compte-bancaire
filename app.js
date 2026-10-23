@@ -27,7 +27,7 @@ function catList(kind){
 }
 var TYPES={courant:'Compte courant',epargne:'Épargne',carte:'Carte prépayée',especes:'Espèces'};
 var BANKS=['BIAT','STB','BNA','Attijari Bank','Amen Bank','ATB','UIB','BH Bank','Banque Zitouna','Banque de Tunisie','Poste Tunisienne','Wifak Bank','Al Baraka Bank'];
-var APP_VERSION='1.1';
+var APP_VERSION='1.2';
 var abc=function(a,b){return String(a).localeCompare(String(b),'fr',{sensitivity:'base'})};
 var ACOL=['#2B4ACB','#0E8A6B','#B5532A','#7B4CC2','#B0802A','#C23B6B'];
 
@@ -1133,8 +1133,8 @@ document.addEventListener('click',function(e){
   else if(act==='edit-acc')accSheet(id);
   else if(act==='del-acc')delAccSheet(id);
   else if(act==='theme')cycleTheme();
-  else if(act==='export-csv'){if(!state.tx.length){toast('Aucune opération à exporter.');return}saveFile('operations-'+todayIso()+'.csv',buildCsv())}
-  else if(act==='export-json')saveFile('carnet-de-comptes-'+todayIso()+'.json',JSON.stringify({app:'carnet-de-comptes',version:1,exportedAt:new Date().toISOString(),data:state},null,2));
+  else if(act==='export-csv'){if(!state.tx.length){toast('Aucune opération à exporter.');return}saveFile('compte-bancaire-operations-'+todayIso()+'.csv',buildCsv())}
+  else if(act==='export-json')saveFile('compte-bancaire-'+todayIso()+'.json',JSON.stringify({app:'carnet-de-comptes',version:1,exportedAt:new Date().toISOString(),data:state},null,2));
   else if(act==='import')importSheet();
   else if(act==='cats')catSheet();
   else if(act==='accounts')accountsSheet();
